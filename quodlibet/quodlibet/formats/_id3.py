@@ -8,7 +8,7 @@
 
 import mutagen.id3
 
-from quodlibet import config, const, print_d
+from quodlibet import config, const, print_d, print_e
 from quodlibet import util
 from quodlibet.util.iso639 import ISO_639_2
 from quodlibet.util.path import get_temp_cover_file
@@ -139,7 +139,16 @@ class ID3File(AudioFile):
                     name = frame.desc[11:]
                 elif frame.desc in self.TXXX_MAP:
                     name = self.TXXX_MAP[frame.desc]
+                elif frame.desc == "FMPS_Rating_Amarok_Score":
+                    name = "amarok_score"
+                elif frame.desc == "FMPS_Rating":
+                    name = "amarok_rating"
+                elif frame.desc == "FMPS_Playcount":
+                    name = "amarok_playcount"
+                elif frame.FrameID == "COMM":
+                    name="comment_other"
                 else:
+                    print_e('unexpected frame: %s: %s' % (frame.desc, frame))
                     continue
             elif frame.FrameID == "RVA2":
                 self.__process_rg(frame)
