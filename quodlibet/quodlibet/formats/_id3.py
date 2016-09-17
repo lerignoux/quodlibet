@@ -91,6 +91,9 @@ class ID3File(AudioFile):
         u"ASIN": "asin",
         u"ALBUMARTISTSORT": "albumartistsort",
         u"BARCODE": "barcode",
+        u"FMPS_Rating": "amarok_rating",
+        u"FMPS_Rating_Amarok_Score": "amarok_score",
+        u"FMPS_Playcount": "amarok_playcount"
         }
     PAM_XXXT = dict([(v, k) for k, v in TXXX_MAP.items()])
 
@@ -130,25 +133,26 @@ class ID3File(AudioFile):
                         self["~#playcount"] = frame.count
                     except AttributeError:
                         pass
-                    self["~#rating"] = rating
+                    self.setdefault("~#rating", rating)
                 continue
             elif frame.FrameID == "COMM" and frame.desc == "":
                 name = "comment"
             elif frame.FrameID in ["COMM", "TXXX"]:
                 if frame.desc.startswith("QuodLibet::"):
                     name = frame.desc[11:]
+                elif frame.desc == "FMPS_Rating":
+                    name = self.TXXX_MAP[frame.desc]
+                    try:
+                        amarok_rating = max(min(float(frame.text[0]), 1.0), 0.0)
+                        self["~#rating"] = amarok_rating
+                    except ValueError:
+                        pass
                 elif frame.desc in self.TXXX_MAP:
                     name = self.TXXX_MAP[frame.desc]
-                elif frame.desc == "FMPS_Rating_Amarok_Score":
-                    name = "amarok_score"
-                elif frame.desc == "FMPS_Rating":
-                    name = "amarok_rating"
-                elif frame.desc == "FMPS_Playcount":
-                    name = "amarok_playcount"
                 elif frame.FrameID == "COMM":
                     name="comment_other"
                 else:
-                    print_e('unexpected frame: %s: %s' % (frame.desc, frame))
+                    print_d('unexpected frame: %s: %s' % (frame.desc, frame))
                     continue
             elif frame.FrameID == "RVA2":
                 self.__process_rg(frame)
@@ -410,6 +414,10 @@ class ID3File(AudioFile):
                 gain = max(min(63.9, gain), -64)
                 f = mutagen.id3.RVA2(desc=k, channel=1, gain=gain, peak=peak)
                 tag.add(f)
+
+        # We first sinc rating and amarok_rating
+        if self.has_rating:
+            self['amarok_rating'] = str(self.get("~#rating"))
 
         for key in self.TXXX_MAP:
             try:

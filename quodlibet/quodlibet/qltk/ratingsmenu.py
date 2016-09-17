@@ -100,6 +100,7 @@ class RatingsMenuItem(Gtk.ImageMenuItem):
                 return
         for song in songs:
             song["~#rating"] = value
+            song.write()
         librarian.changed(songs)
 
     def remove_rating(self, songs, librarian):

@@ -330,6 +330,12 @@ class AudioFile(dict, ImageContainer):
                 else:
                     return util.format_time_display(length)
             elif key == "#rating":
+                if 'amarok_rating' in self:
+                    try:
+                        amarok_rating = float(self.get('amarok_rating'))
+                        return amarok_rating
+                    except ValueError:
+                        pass
                 return dict.get(self, "~" + key, config.RATINGS.default)
             elif key == "rating":
                 return util.format_rating(self("~#rating"))
