@@ -330,6 +330,7 @@ def _rating(app, value):
         except (ValueError, TypeError):
             return
     song["~#rating"] = max(0.0, min(1.0, rating))
+    song.write()
     app.library.changed([song])
 
 
