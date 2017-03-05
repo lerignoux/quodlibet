@@ -636,6 +636,7 @@ class SongList(AllTreeView, SongListDnDMixin, DragScroll,
                 return
         for song in songs:
             song["~#rating"] = value
+            song.write()
         librarian.changed(songs)
 
     def __key_press(self, songlist, event, librarian, player):
